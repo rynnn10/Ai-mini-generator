@@ -7,7 +7,7 @@ const CONFIG = {
     API_KEY: "AIzaSyChkUo1qt4epG77LXbLFy0mDp3SS85PMOk", 
     
     // Model Gemini (Gunakan gemini-1.5-flash untuk kecepatan & stabilitas free tier)
-    MODEL_NAME: "gemini-1.5-flash" 
+    MODEL_NAME: "gemini-2.5-flash-preview-09-2025" 
 };
 
 // --- LOGIKA APLIKASI DI BAWAH INI ---
