@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Generator (Gemini Powered)</title>
+    <title>AI Generator (Ultimate Fix)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Markdown Parser (Marked.js) agar hasil AI rapi (bold, list, code) -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Marked.js -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Space Grotesk', 'sans-serif'] },
-                    colors: { 'neon-blue': '#3b82f6', 'dark-bg': '#0f172a' }
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                    colors: { 'brand-dark': '#0f172a', 'brand-blue': '#3b82f6' }
                 }
             }
         }
@@ -26,83 +26,359 @@
 
     <style>
         body { background-color: #0f172a; color: #e2e8f0; overflow-x: hidden; }
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
         
-        /* Glassmorphism */
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        
         .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        /* Markdown Styles for Output */
-        .prose h1, .prose h2, .prose h3 { color: #60a5fa; font-weight: bold; margin-top: 1em; margin-bottom: 0.5em; }
-        .prose p { margin-bottom: 1em; }
-        .prose ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
-        .prose ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 1em; }
-        .prose strong { color: #e2e8f0; font-weight: 700; }
-        .prose code { background: #334155; padding: 2px 5px; rounded: 4px; color: #f472b6; font-family: monospace; }
-        .prose pre { background: #1e293b; padding: 1em; rounded: 8px; overflow-x: auto; margin-bottom: 1em; }
-        .prose pre code { background: transparent; color: #e2e8f0; }
-        .prose blockquote { border-left: 4px solid #3b82f6; padding-left: 1em; color: #94a3b8; font-style: italic; }
-
-        /* Loader */
+        /* Markdown Styling */
+        .prose h1, .prose h2 { color: #60a5fa; font-weight: 700; margin-top: 1rem; }
+        .prose ul { list-style-type: disc; padding-left: 1.2rem; margin-bottom: 0.8rem; }
+        .prose ol { list-style-type: decimal; padding-left: 1.2rem; margin-bottom: 0.8rem; }
+        .prose strong { color: #f8fafc; font-weight: 600; }
+        .prose code { background: #334155; padding: 2px 6px; rounded: 4px; color: #f472b6; font-size: 0.9em; font-family: monospace; }
+        .prose pre { background: #1e293b; padding: 1rem; rounded-lg; overflow-x: auto; margin: 1rem 0; border: 1px solid #334155; }
+        
+        /* Loader Animation */
         .loader {
-            border: 3px solid rgba(255,255,255,0.1);
-            border-left-color: #3b82f6;
+            width: 20px; height: 20px;
+            border: 3px solid #FFF;
+            border-bottom-color: transparent;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Toast Animation */
+        #toast {
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        .toast-hidden {
+            transform: translate(-50%, 150%) !important; /* Hide below screen */
+            opacity: 0;
+        }
+        .toast-visible {
+            transform: translate(-50%, 0) !important; /* Show centered */
+            opacity: 1;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4 relative">
+<body class="min-h-screen flex flex-col p-4 relative font-sans">
 
-    <!-- Decoration -->
-    <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
-        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style="animation-delay: 2s;"></div>
+    <!-- Background Decoration -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+        <div class="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-purple-600/20 rounded-full blur-[100px]"></div>
     </div>
 
-    <main class="w-full max-w-5xl glass-panel rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[600px]">
+    <main class="w-full max-w-5xl mx-auto glass-panel rounded-2xl shadow-2xl flex flex-col md:flex-row h-[85vh] md:h-[800px] overflow-hidden my-auto">
         
         <!-- Sidebar Settings -->
-        <aside class="w-full md:w-1/3 bg-slate-900/50 p-6 flex flex-col border-b md:border-b-0 md:border-r border-slate-700">
-            <div class="flex items-center gap-3 mb-6">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-                    <i class="fa-solid fa-brain text-white text-xl"></i>
+        <aside class="w-full md:w-80 bg-slate-900/60 flex flex-col border-b md:border-b-0 md:border-r border-slate-700/50 z-10">
+            <div class="p-5 flex items-center gap-3 border-b border-slate-700/50">
+                <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid fa-bolt text-white text-sm"></i>
                 </div>
-                <div>
-                    <h1 class="text-xl font-bold text-white">Gemini Generator</h1>
-                    <p class="text-xs text-slate-400">Powered by Google AI</p>
+                <h1 class="font-bold text-white tracking-tight">AI Generator <span class="text-xs text-blue-400 font-normal block">Ultimate Fix</span></h1>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-5 space-y-6">
+                
+                <!-- API KEY Section -->
+                <div class="space-y-2">
+                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">1. API Key (Wajib)</label>
+                    <input type="password" id="apiKeyInput" placeholder="Tempel Key Gemini disini..." 
+                        class="w-full bg-slate-800/80 border border-slate-600 text-white text-sm rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-slate-500">
+                    <p class="text-[10px] text-slate-500">Disimpan lokal di browser Anda.</p>
+                </div>
+
+                <!-- MODEL Section (CRITICAL FIX) -->
+                <div class="space-y-2">
+                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">2. Model AI</label>
+                    <select id="modelSelect" class="w-full bg-slate-800/80 border border-slate-600 text-white text-sm rounded-lg p-3 outline-none cursor-pointer focus:border-blue-500">
+                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Rekomendasi)</option>
+                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Lebih Pintar)</option>
+                        <option value="gemini-1.0-pro">Gemini 1.0 Pro (Legacy)</option>
+                        <option value="custom">Input Manual (Jika Error)</option>
+                    </select>
+                    
+                    <!-- Manual Input (Hidden by default) -->
+                    <div id="customModelWrapper" class="hidden mt-2">
+                        <input type="text" id="customModelInput" placeholder="Contoh: gemini-1.5-flash-002" 
+                        class="w-full bg-slate-900 border border-blue-500/50 text-blue-300 text-xs rounded-lg p-2.5 outline-none">
+                        <p class="text-[10px] text-blue-400 mt-1">Masukkan nama model persis dari dokumentasi Google.</p>
+                    </div>
+                </div>
+
+                <!-- TONE Section -->
+                <div class="space-y-2">
+                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">3. Gaya Bicara</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="tone-btn active-tone p-2 text-xs rounded-md border border-blue-500 bg-blue-600/20 text-blue-300" data-val="Formal dan profesional">Formal</button>
+                        <button class="tone-btn p-2 text-xs rounded-md border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700" data-val="Santai seperti teman">Santai</button>
+                        <button class="tone-btn p-2 text-xs rounded-md border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700" data-val="Lucu dan humoris">Lucu</button>
+                        <button class="tone-btn p-2 text-xs rounded-md border border-slate-600 bg-slate-800 text-slate-400 hover:bg-slate-700" data-val="Puitis dan kreatif">Puitis</button>
+                    </div>
                 </div>
             </div>
 
-            <div class="flex-1 flex flex-col gap-4 overflow-y-auto">
+            <!-- Footer Info -->
+            <div class="p-4 border-t border-slate-700/50 text-[10px] text-slate-500 text-center">
+                Jika error "Not Found", coba ganti Model ke opsi lain atau gunakan 'Input Manual'.
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <section class="flex-1 flex flex-col bg-slate-950/30 relative">
+            
+            <!-- Output Area -->
+            <div id="outputContainer" class="flex-1 p-6 overflow-y-auto scroll-smooth relative">
                 
-                <!-- API KEY INPUT (CRITICAL) -->
-                <div class="bg-blue-900/20 p-4 rounded-xl border border-blue-500/30">
-                    <label class="block text-xs font-bold text-blue-400 mb-2 uppercase tracking-wide">
-                        <i class="fa-solid fa-key mr-1"></i> API Key (Wajib)
-                    </label>
-                    <input type="password" id="apiKeyInput" placeholder="Tempel API Key Gemini disini..." 
-                        class="w-full bg-slate-900 border border-slate-700 text-white text-xs rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[10px] text-blue-400 hover:text-blue-300 mt-2 inline-block underline decoration-dotted">
-                        Belum punya? Ambil Gratis di sini &rarr;
-                    </a>
+                <!-- Welcome State -->
+                <div id="placeholder" class="h-full flex flex-col items-center justify-center text-slate-500 space-y-4">
+                    <div class="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center">
+                        <i class="fa-solid fa-sparkles text-2xl text-slate-400"></i>
+                    </div>
+                    <p class="text-sm">Siap generate konten. Silakan isi API Key.</p>
                 </div>
 
-                <hr class="border-slate-700/50 my-2">
+                <!-- Result Content -->
+                <div id="resultContent" class="hidden max-w-3xl mx-auto pb-10">
+                    <!-- Text will be injected here -->
+                </div>
 
-                <!-- Settings -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-2">Gaya Bahasa</label>
-                    <select id="toneSelect" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-lg p-2.5 focus:ring-blue-500 outline-none">
+                <!-- Loading State -->
+                <div id="loaderOverlay" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center z-20 hidden">
+                    <span class="loader mb-4"></span>
+                    <p class="text-xs text-slate-300 animate-pulse font-medium">MENGHUBUNGI GOOGLE AI...</p>
+                </div>
+            </div>
+
+            <!-- Input Area (Bottom Fixed inside container) -->
+            <div class="p-4 bg-slate-900 border-t border-slate-800">
+                <div class="relative max-w-3xl mx-auto">
+                    <textarea id="promptInput" rows="1" 
+                        class="w-full bg-slate-800 text-white rounded-xl pl-4 pr-14 py-3.5 text-sm outline-none focus:ring-1 focus:ring-blue-500 resize-none overflow-hidden placeholder-slate-500 shadow-lg"
+                        placeholder="Ketik perintah Anda di sini... (Contoh: Buatkan caption IG untuk jualan sepatu)"
+                        oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                    
+                    <button id="generateBtn" class="absolute right-2 bottom-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg p-2 w-9 h-9 flex items-center justify-center transition-all shadow-lg shadow-blue-600/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Floating Copy Button -->
+            <button id="copyBtn" class="absolute top-4 right-6 bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-lg border border-slate-700 backdrop-blur-md hidden transition-all flex items-center gap-2">
+                <i class="fa-regular fa-copy"></i> <span>Salin</span>
+            </button>
+
+        </section>
+    </main>
+
+    <!-- Responsive Toast Notification (Fixed Position) -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-slate-800 text-white px-5 py-3 rounded-full shadow-2xl border border-slate-700 min-w-[300px] max-w-[90%] toast-hidden">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-green-400 text-lg"></i>
+        <p id="toastMsg" class="text-sm font-medium flex-1">Berhasil!</p>
+        <button onclick="hideToast()" class="text-slate-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <script>
+        // --- DOM ELEMENTS ---
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const modelSelect = document.getElementById('modelSelect');
+        const customModelWrapper = document.getElementById('customModelWrapper');
+        const customModelInput = document.getElementById('customModelInput');
+        const promptInput = document.getElementById('promptInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const outputContainer = document.getElementById('outputContainer');
+        const resultContent = document.getElementById('resultContent');
+        const placeholder = document.getElementById('placeholder');
+        const loaderOverlay = document.getElementById('loaderOverlay');
+        const copyBtn = document.getElementById('copyBtn');
+        const toneBtns = document.querySelectorAll('.tone-btn');
+        const toast = document.getElementById('toast');
+
+        // --- STATE MANAGEMENT ---
+        let currentTone = "Formal dan profesional";
+
+        // --- INIT ---
+        // Load API Key
+        const savedKey = localStorage.getItem('gemini_api_key_v2');
+        if (savedKey) apiKeyInput.value = savedKey;
+
+        // Auto-resize textarea logic
+        promptInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleGenerate();
+            }
+        });
+
+        // Save API Key on input
+        apiKeyInput.addEventListener('input', (e) => localStorage.setItem('gemini_api_key_v2', e.target.value.trim()));
+
+        // Model Select Logic
+        modelSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'custom') {
+                customModelWrapper.classList.remove('hidden');
+                customModelInput.focus();
+            } else {
+                customModelWrapper.classList.add('hidden');
+            }
+        });
+
+        // Tone Button Logic
+        toneBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                toneBtns.forEach(b => {
+                    b.classList.remove('active-tone', 'border-blue-500', 'bg-blue-600/20', 'text-blue-300');
+                    b.classList.add('border-slate-600', 'bg-slate-800', 'text-slate-400');
+                });
+                btn.classList.remove('border-slate-600', 'bg-slate-800', 'text-slate-400');
+                btn.classList.add('active-tone', 'border-blue-500', 'bg-blue-600/20', 'text-blue-300');
+                currentTone = btn.dataset.val;
+            });
+        });
+
+        // --- CORE FUNCTION ---
+        async function handleGenerate() {
+            const apiKey = apiKeyInput.value.trim();
+            const prompt = promptInput.value.trim();
+            
+            // Determine Model Name
+            let modelName = modelSelect.value;
+            if (modelName === 'custom') {
+                modelName = customModelInput.value.trim();
+                if (!modelName) {
+                    showToast('Nama model manual tidak boleh kosong!', 'error');
+                    return;
+                }
+            }
+
+            // Validation
+            if (!apiKey) { showToast('API Key wajib diisi!', 'error'); apiKeyInput.focus(); return; }
+            if (!prompt) { showToast('Ketik perintah dulu!', 'error'); promptInput.focus(); return; }
+
+            // UI Preparing
+            generateBtn.disabled = true;
+            loaderOverlay.classList.remove('hidden');
+            copyBtn.classList.add('hidden');
+            
+            // Construct Payload
+            const fullPrompt = `Peran: Kamu adalah asisten yang ${currentTone}.
+            Tugas: ${prompt}
+            Format: Gunakan Markdown yang rapi (Bold untuk poin penting, List untuk daftar).`;
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: fullPrompt }] }]
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    // Specific Error Handling for Models
+                    let errorMsg = data.error?.message || 'Gagal menghubungi server';
+                    if (errorMsg.includes('not found') || errorMsg.includes('404')) {
+                        throw new Error(`Model '${modelName}' tidak ditemukan. Coba pilih 'Gemini 1.5 Pro' atau 'Gemini 1.0 Pro' di menu.`);
+                    }
+                    throw new Error(errorMsg);
+                }
+
+                // Success Parsing
+                const text = data.candidates[0].content.parts[0].text;
+                
+                // Render
+                placeholder.classList.add('hidden');
+                resultContent.innerHTML = marked.parse(text);
+                resultContent.classList.remove('hidden');
+                copyBtn.classList.remove('hidden');
+                
+                showToast('Konten berhasil dibuat!', 'success');
+                
+                // Clear input height reset
+                promptInput.value = '';
+                promptInput.style.height = 'auto';
+
+            } catch (err) {
+                console.error(err);
+                resultContent.innerHTML = `
+                <div class="p-4 bg-red-900/20 border border-red-500/50 rounded-lg text-red-200 text-sm">
+                    <p class="font-bold flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Terjadi Kesalahan</p>
+                    <p class="mt-2 opacity-90">${err.message}</p>
+                </div>`;
+                placeholder.classList.add('hidden');
+                resultContent.classList.remove('hidden');
+                showToast('Gagal generate konten', 'error');
+            } finally {
+                generateBtn.disabled = false;
+                loaderOverlay.classList.add('hidden');
+            }
+        }
+
+        generateBtn.addEventListener('click', handleGenerate);
+
+        // Copy Function
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(resultContent.innerText).then(() => {
+                showToast('Teks disalin ke clipboard!', 'success');
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="fa-solid fa-check text-green-400"></i> <span>Disalin</span>';
+                setTimeout(() => copyBtn.innerHTML = originalText, 2000);
+            });
+        });
+
+        // Toast Logic (Responsive Fix)
+        function showToast(msg, type = 'info') {
+            const toastEl = document.getElementById('toast');
+            const iconEl = document.getElementById('toastIcon');
+            const msgEl = document.getElementById('toastMsg');
+
+            msgEl.textContent = msg;
+
+            if (type === 'error') {
+                iconEl.className = 'fa-solid fa-circle-xmark text-red-500 text-lg';
+                toastEl.classList.add('border-red-500/50');
+            } else {
+                iconEl.className = 'fa-solid fa-circle-check text-green-400 text-lg';
+                toastEl.classList.remove('border-red-500/50');
+            }
+
+            // Show Toast (Center Bottom)
+            toastEl.classList.remove('toast-hidden');
+            toastEl.classList.add('toast-visible');
+
+            // Auto Hide
+            setTimeout(() => {
+                hideToast();
+            }, 3500);
+        }
+
+        function hideToast() {
+            const toastEl = document.getElementById('toast');
+            toastEl.classList.remove('toast-visible');
+            toastEl.classList.add('toast-hidden');
+        }
+    </script>
+</body>
+</html>
+
                         <option value="Jadilah asisten profesional dan sopan">👔 Formal & Profesional</option>
                         <option value="Gunakan bahasa gaul Indonesia yang santai dan akrab">😎 Santai & Gaul</option>
                         <option value="Jadilah penulis kreatif yang puitis dan metaforis">🎨 Kreatif & Puitis</option>
