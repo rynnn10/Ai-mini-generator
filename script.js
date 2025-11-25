@@ -1,30 +1,29 @@
 /**
- * KONFIGURASI API
- * Tempel API Key Anda di bawah ini di dalam tanda kutip.
+ * KONFIGURASI API GEMINI 2.5
  */
 const CONFIG = {
-    // Tempel API Key lengkap Anda di sini (ganti teks di dalam kutip)
+    // API Key Anda (Langsung ditanam sesuai permintaan)
     API_KEY: "AIzaSyChkUo1qt4epG77LXbLFy0mDp3SS85PMOk", 
     
-    // Model Gemini (Gunakan gemini-1.5-flash untuk kecepatan & stabilitas free tier)
-    MODEL_NAME: "gemini-2.5-flash-preview-09-2025" 
+    // Menggunakan Model Gemini 2.5 Flash Preview
+    MODEL_NAME: "gemini-2.5-flash-preview-09-2025"
 };
 
-// --- LOGIKA APLIKASI DI BAWAH INI ---
+// --- LOGIKA PROGRAM ---
 
 const chatContainer = document.getElementById('chatContainer');
 const promptInput = document.getElementById('promptInput');
 const loadingIndicator = document.getElementById('loadingIndicator');
 const welcomeMsg = document.getElementById('welcomeMsg');
 
-// Fungsi Auto Resize Textarea
+// Auto-height textarea
 function autoResize(textarea) {
     textarea.style.height = 'auto';
     textarea.style.height = textarea.scrollHeight + 'px';
     if(textarea.value === '') textarea.style.height = 'auto';
 }
 
-// Event Listener untuk Enter (Kirim pesan)
+// Enter untuk kirim
 promptInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -32,95 +31,76 @@ promptInput.addEventListener('keydown', (e) => {
     }
 });
 
-// Fungsi Utama Kirim Pesan
 async function sendMessage() {
     const text = promptInput.value.trim();
-    
-    // Validasi input kosong
     if (!text) return;
 
-    // Sembunyikan pesan welcome jika ada
     if(welcomeMsg) welcomeMsg.classList.add('hidden');
 
-    // 1. Tampilkan Pesan User
+    // Tampilkan pesan User
     appendMessage(text, 'user');
-    
-    // Reset Input
     promptInput.value = '';
     promptInput.style.height = 'auto';
 
-    // Tampilkan Loading
+    // Loading ON
     loadingIndicator.classList.remove('hidden');
-    scrollToBottom();
+    chatContainer.scrollTop = chatContainer.scrollHeight;
 
-    // 2. Request ke Google API
     try {
+        // URL Endpoint Gemini 2.5
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.MODEL_NAME}:generateContent?key=${CONFIG.API_KEY}`;
         
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [{
-                    parts: [{ text: text }]
-                }]
+                contents: [{ parts: [{ text: text }] }]
             })
         });
 
         const data = await response.json();
 
-        // Cek jika ada error dari Google
         if (!response.ok) {
-            throw new Error(data.error?.message || "Gagal menghubungi server Gemini.");
+            // Jika error 404/Not Found pada model 2.5, beri saran fallback
+            if(data.error?.code === 404 || data.error?.message?.includes('not found')) {
+                throw new Error("Model Gemini 2.5 Flash belum aktif untuk API Key ini. Coba gunakan Gemini 1.5 Pro.");
+            }
+            throw new Error(data.error?.message || "Gagal menghubungi server.");
         }
 
-        // Ambil teks jawaban
         const aiResponse = data.candidates[0].content.parts[0].text;
-        
-        // 3. Tampilkan Balasan AI
         appendMessage(aiResponse, 'ai');
 
     } catch (error) {
         console.error(error);
         appendMessage(`**Error:** ${error.message}`, 'error');
     } finally {
-        // Sembunyikan Loading
         loadingIndicator.classList.add('hidden');
-        scrollToBottom();
+        chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 }
 
-// Fungsi Menampilkan Bubble Chat
 function appendMessage(text, type) {
     const div = document.createElement('div');
     const isUser = type === 'user';
     
-    // Styling Layout (Kanan untuk user, Kiri untuk AI)
     div.className = `flex w-full ${isUser ? 'justify-end' : 'justify-start'} animate-fade-in mb-4`;
     
-    // Warna Bubble
     let bubbleClass = isUser 
-        ? 'bg-blue-600 text-white rounded-2xl rounded-tr-sm' 
+        ? 'bg-purple-600 text-white rounded-2xl rounded-tr-sm' 
         : 'bg-surface border border-slate-700 text-slate-200 rounded-2xl rounded-tl-sm';
     
     if (type === 'error') bubbleClass = 'bg-red-900/50 border border-red-500 text-red-200 rounded-2xl';
 
-    // Convert Markdown ke HTML (hanya untuk AI)
-    // User chat ditampilkan text biasa untuk keamanan (mencegah XSS)
     const contentHTML = isUser ? text : marked.parse(text);
 
     div.innerHTML = `
-        <div class="max-w-[85%] px-4 py-3 ${bubbleClass} text-sm prose">
+        <div class="max-w-[85%] px-4 py-3 ${bubbleClass} text-sm prose prose-invert">
             ${contentHTML}
         </div>
     `;
     
-    // Masukkan pesan SEBELUM loading indicator
     chatContainer.insertBefore(div, loadingIndicator);
 }
 
-// Fungsi Scroll ke Bawah Otomatis
-function scrollToBottom() {
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-}
 
