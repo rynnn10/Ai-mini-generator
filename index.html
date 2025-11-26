@@ -3,43 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gemini 2.5 Flash Chat</title>
+    <title>Super App Riyan 2025</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Marked.js untuk format teks AI -->
+    <!-- Marked.js -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- Font Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-
+    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: { 
-                        bg_dark: '#0f172a',
-                        surface: '#1e293b',
-                        primary: '#8b5cf6' /* Mengganti warna jadi Ungu untuk varian 2.5 */
-                    }
+                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+                    colors: { surface: '#1e293b' }
                 }
             }
         }
     </script>
 
     <style>
-        body { background-color: #0f172a; color: #e2e8f0; -webkit-tap-highlight-color: transparent; }
-        
-        /* Markdown Styling */
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600&display=swap');
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0f172a;
+            overscroll-behavior: none;
+        }
+        .calc-font { font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 2px; }
+        .btn-press:active { transform: scale(0.95); }
+        .history-panel { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .history-open { transform: translateX(0); }
+        .history-closed { transform: translateX(100%); }
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+        /* AI Chat Styling */
         .prose p { margin-bottom: 0.5rem; line-height: 1.5; }
         .prose h1, .prose h2 { color: #a78bfa; font-weight: 700; margin-top: 1rem; }
         .prose ul { list-style-type: disc; padding-left: 1.2rem; margin-bottom: 0.5rem; }
-        .prose code { background: #334155; padding: 2px 5px; rounded: 4px; font-family: monospace; font-size: 0.9em; color: #f472b6; }
-        .prose pre { background: #020617; padding: 1rem; rounded-lg; overflow-x: auto; margin: 0.5rem 0; border: 1px solid #334155; }
+        .prose code { background: #334155; padding: 2px 5px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.9em; color: #f472b6; }
+        .prose pre { background: #020617; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin: 0.5rem 0; border: 1px solid #334155; }
         
-        /* Loading Animation */
         .loader span {
             display: inline-block; width: 6px; height: 6px; background-color: #a78bfa; border-radius: 50%;
             animation: bounce 1.4s infinite ease-in-out both; margin: 0 1px;
@@ -49,57 +58,213 @@
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
     </style>
 </head>
-<body class="h-[100dvh] flex flex-col overflow-hidden font-sans">
+<body class="text-white min-h-screen flex items-center justify-center sm:p-4 p-0">
 
-    <!-- Header -->
-    <header class="h-16 bg-surface border-b border-slate-700 flex items-center justify-between px-4 z-20 shadow-md">
-        <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center">
-                <i class="fa-solid fa-bolt text-white text-xs"></i>
-            </div>
-            <div>
-                <h1 class="font-bold text-white tracking-wide text-sm">Gemini 2.5 Flash</h1>
-                <span class="text-[10px] text-green-400">● Connected</span>
-            </div>
-        </div>
-    </header>
-
-    <!-- Chat Area -->
-    <main id="chatContainer" class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth relative">
+    <!-- Main Container -->
+    <div class="bg-slate-800 w-full sm:max-w-md h-[100dvh] sm:h-[90vh] sm:rounded-3xl shadow-2xl overflow-hidden border-0 sm:border border-slate-700 relative flex flex-col">
         
-        <!-- Welcome Screen -->
-        <div id="welcomeMsg" class="flex flex-col items-center justify-center h-full text-center p-6 opacity-60">
-            <i class="fa-solid fa-microchip text-4xl text-purple-500 mb-4 animate-pulse"></i>
-            <h2 class="text-lg font-bold text-white">Model 2.5 Ready</h2>
-            <p class="text-xs text-slate-400 mt-2">Versi Eksperimental Tercepat</p>
-        </div>
-
-        <!-- AI Loading Bubble -->
-        <div id="loadingIndicator" class="hidden flex justify-start w-full">
-            <div class="bg-surface border border-slate-700 px-4 py-3 rounded-2xl rounded-tl-none flex items-center gap-2">
-                <div class="loader"><span></span><span></span><span></span></div>
-                <span class="text-xs text-slate-400 ml-2">Menunggu respon server...</span>
-            </div>
-        </div>
-        
-        <div class="h-10"></div>
-    </main>
-
-    <!-- Input Area -->
-    <footer class="bg-surface border-t border-slate-700 p-3 pb-safe z-20">
-        <div class="relative flex gap-2 items-end max-w-3xl mx-auto">
-            <textarea id="promptInput" rows="1" 
-                class="flex-1 bg-slate-900 text-white text-sm rounded-2xl px-4 py-3 border border-slate-700 focus:border-purple-500 focus:ring-1 outline-none resize-none max-h-32 placeholder-slate-500"
-                placeholder="Ketik sesuatu..." oninput="autoResize(this)"></textarea>
-            
-            <button onclick="sendMessage()" id="sendBtn" class="w-11 h-11 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex-shrink-0 flex items-center justify-center shadow-lg transition-transform active:scale-95">
-                <i class="fa-solid fa-paper-plane"></i>
+        <!-- Header / Tabs -->
+        <div class="flex border-b border-slate-700 bg-slate-900/50 shrink-0 z-10 relative">
+            <button onclick="switchTab('calculator')" id="tab-calc" class="flex-1 py-4 text-center font-semibold text-emerald-400 border-b-2 border-emerald-400 transition-all bg-slate-800/50">
+                <i class="fas fa-calculator mr-2"></i>Calc
+            </button>
+            <button onclick="switchTab('converter')" id="tab-conv" class="flex-1 py-4 text-center font-semibold text-slate-400 border-b-2 border-transparent transition-all hover:bg-slate-700/50">
+                <i class="fas fa-globe mr-2"></i>Conv
+            </button>
+            <button onclick="switchTab('ai')" id="tab-ai" class="flex-1 py-4 text-center font-semibold text-slate-400 border-b-2 border-transparent transition-all hover:bg-slate-700/50">
+                <i class="fas fa-bolt mr-2"></i>AI Chat
             </button>
         </div>
-    </footer>
 
-    <!-- Script -->
-    <script src="script.js"></script>
+        <!-- HISTORY PANEL -->
+        <div id="history-overlay" class="absolute top-[58px] right-0 w-3/4 h-[calc(100%-58px)] bg-slate-900/95 backdrop-blur-sm z-40 history-panel history-closed border-l border-slate-700 flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-slate-700">
+                <span class="text-sm font-bold text-emerald-400"><i class="fas fa-history mr-2"></i>Riwayat</span>
+                <div>
+                    <button onclick="clearHistory()" class="text-slate-400 hover:text-red-400 mr-3" title="Hapus Semua">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                    <button onclick="toggleHistory()" class="text-slate-400 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="history-list" class="flex-1 overflow-y-auto p-2 space-y-2">
+                <div class="text-center text-slate-600 text-xs mt-10 italic">Belum ada riwayat</div>
+            </div>
+        </div>
+
+        <!-- 1. CALCULATOR VIEW -->
+        <div id="calculator-view" class="p-4 flex flex-col h-full relative z-0 overflow-y-auto">
+            <div class="bg-slate-900 rounded-xl p-4 mb-3 text-right shadow-inner border border-slate-700/50 shrink-0 relative flex flex-col justify-end min-h-[160px]">
+                <button onclick="toggleHistory()" class="absolute top-3 right-3 text-slate-500 hover:text-emerald-400 transition-colors bg-slate-800/80 p-2 rounded-lg backdrop-blur-sm z-20">
+                    <i class="fas fa-history"></i>
+                </button>
+                <div class="flex justify-between items-center text-xs text-slate-500 mb-1 pr-6 absolute top-3 left-4 z-10">
+                    <span class="bg-slate-800 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider text-emerald-500/80">DEG</span>
+                </div>
+                <div class="mt-auto relative z-10">
+                    <div id="calc-display" class="text-4xl font-bold calc-font tracking-wider text-white overflow-x-auto whitespace-nowrap mb-1 pb-1">0</div>
+                    <div id="live-preview" class="text-lg font-medium text-slate-500 calc-font h-6 overflow-hidden transition-all">= 0</div>
+                </div>
+            </div>
+
+            <div class="flex justify-between mb-2 px-1 shrink-0">
+                <button onclick="toggleScientific()" class="text-xs text-slate-400 hover:text-emerald-400 transition-colors py-2">
+                    <i class="fas fa-flask mr-1"></i> Mode Ilmiah
+                </button>
+                <button onclick="backspace()" class="text-orange-400 hover:text-orange-300 transition-colors py-2 px-2">
+                    <i class="fas fa-backspace text-lg"></i>
+                </button>
+            </div>
+
+            <div id="scientific-keys" class="grid grid-cols-4 gap-2 mb-2 hidden transition-all shrink-0">
+                <button onclick="appendFunction('sin(')" class="btn-press bg-slate-700 p-3 rounded-lg text-xs hover:bg-slate-600 font-medium">sin</button>
+                <button onclick="appendFunction('cos(')" class="btn-press bg-slate-700 p-3 rounded-lg text-xs hover:bg-slate-600 font-medium">cos</button>
+                <button onclick="appendFunction('tan(')" class="btn-press bg-slate-700 p-3 rounded-lg text-xs hover:bg-slate-600 font-medium">tan</button>
+                <button onclick="appendFunction('log(')" class="btn-press bg-slate-700 p-3 rounded-lg text-xs hover:bg-slate-600 font-medium">log</button>
+                <button onclick="appendFunction('sqrt(')" class="btn-press bg-slate-700 p-3 rounded-lg text-xs hover:bg-slate-600 font-medium">√</button>
+                <button onclick="appendValue('^')" class="btn-press bg-slate-700 p-3 rounded-lg text-xs hover:bg-slate-600 font-medium">^</button>
+                <button onclick="appendValue('(')" class="btn-press bg-slate-700 p-3 rounded-lg text-xs hover:bg-slate-600 font-medium">(</button>
+                <button onclick="appendValue(')')" class="btn-press bg-slate-700 p-3 rounded-lg text-xs hover:bg-slate-600 font-medium">)</button>
+            </div>
+
+            <div class="grid grid-cols-4 gap-3 flex-grow min-h-[320px]">
+                <button onclick="clearDisplay()" class="btn-press bg-red-500/20 text-red-400 p-3 rounded-xl font-bold hover:bg-red-500/30">AC</button>
+                <button onclick="appendValue('%')" class="btn-press bg-slate-700 text-emerald-400 p-3 rounded-xl font-bold hover:bg-slate-600">%</button>
+                <button onclick="appendValue('/')" class="btn-press bg-slate-700 text-emerald-400 p-3 rounded-xl font-bold hover:bg-slate-600">÷</button>
+                <button onclick="appendValue('*')" class="btn-press bg-slate-700 text-emerald-400 p-3 rounded-xl font-bold hover:bg-slate-600">×</button>
+
+                <button onclick="appendValue('7')" class="btn-press bg-slate-800 text-white p-3 rounded-xl font-bold text-xl hover:bg-slate-700 shadow-md">7</button>
+                <button onclick="appendValue('8')" class="btn-press bg-slate-800 text-white p-3 rounded-xl font-bold text-xl hover:bg-slate-700 shadow-md">8</button>
+                <button onclick="appendValue('9')" class="btn-press bg-slate-800 text-white p-3 rounded-xl font-bold text-xl hover:bg-slate-700 shadow-md">9</button>
+                <button onclick="appendValue('-')" class="btn-press bg-slate-700 text-emerald-400 p-3 rounded-xl font-bold text-xl hover:bg-slate-600">−</button>
+
+                <button onclick="appendValue('4')" class="btn-press bg-slate-800 text-white p-3 rounded-xl font-bold text-xl hover:bg-slate-700 shadow-md">4</button>
+                <button onclick="appendValue('5')" class="btn-press bg-slate-800 text-white p-3 rounded-xl font-bold text-xl hover:bg-slate-700 shadow-md">5</button>
+                <button onclick="appendValue('6')" class="btn-press bg-slate-800 text-white p-3 rounded-xl font-bold text-xl hover:bg-slate-700 shadow-md">6</button>
+                <button onclick="appendValue('+')" class="btn-press bg-slate-700 text-emerald-400 p-3 rounded-xl font-bold text-xl hover:bg-slate-600">+</button>
+
+                <button onclick="appendValue('1')" class="btn-press bg-slate-800 text-white p-3 rounded-xl font-bold text-xl hover:bg-slate-700 shadow-md">1</button>
+                <button onclick="appendValue('2')" class="btn-press bg-slate-800 text-white p-3 rounded-xl font-bold text-xl hover:bg-slate-700 shadow-md">2</button>
+                <button onclick="appendValue('3')" class="btn-press bg-slate-800 text-white p-3 rounded-xl font-bold text-xl hover:bg-slate-700 shadow-md">3</button>
+                
+                <button onclick="calculate()" class="btn-press bg-emerald-500 text-white p-3 rounded-xl font-bold text-xl hover:bg-emerald-600 row-span-2 flex items-center justify-center shadow-lg shadow-emerald-500/20">=</button>
+
+                <button onclick="appendValue('0')" class="btn-press col-span-2 bg-slate-800 text-white p-3 rounded-xl font-bold text-xl hover:bg-slate-700 shadow-md">0</button>
+                <button onclick="appendValue('.')" class="btn-press bg-slate-800 text-white p-3 rounded-xl font-bold text-xl hover:bg-slate-700 shadow-md">.</button>
+            </div>
+            
+            <div class="text-center text-[10px] text-slate-600 pt-4 pb-2 font-mono">
+                &copy; Copyright Riyan 2025
+            </div>
+        </div>
+
+        <!-- 2. CONVERTER VIEW -->
+        <div id="converter-view" class="p-6 hidden h-full overflow-y-auto flex flex-col z-0 pb-10">
+            <div id="api-status" class="mb-4 text-[10px] text-slate-500 flex items-center justify-end">
+                <span class="mr-2">Sumber Data:</span>
+                <span id="data-source-badge" class="px-2 py-1 bg-slate-700 rounded text-slate-300">Offline (Backup)</span>
+            </div>
+
+            <label class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-2 block">Pilih Kategori</label>
+            <div class="relative mb-6">
+                <select id="conv-category" onchange="updateUnits()" class="w-full bg-slate-900 text-white p-4 rounded-xl border border-slate-700 appearance-none focus:outline-none focus:border-emerald-500 cursor-pointer">
+                    <option value="currency">💰 Mata Uang (Live/Backup)</option>
+                    <option value="length">📏 Panjang / Jarak</option>
+                    <option value="weight">⚖️ Berat / Massa</option>
+                    <option value="temp">🌡️ Suhu</option>
+                    <option value="data">💾 Data Digital</option>
+                </select>
+                <div class="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none text-slate-400">
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="text-xs text-slate-400 mb-1 block">Dari</label>
+                    <select id="unit-from" onchange="convert()" class="w-full bg-slate-700 text-sm p-3 rounded-lg border-0 focus:ring-2 focus:ring-emerald-500 text-white cursor-pointer"></select>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 mb-1 block">Ke</label>
+                    <select id="unit-to" onchange="convert()" class="w-full bg-slate-700 text-sm p-3 rounded-lg border-0 focus:ring-2 focus:ring-emerald-500 text-white cursor-pointer"></select>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 focus-within:border-emerald-500 transition-colors">
+                    <label class="text-xs text-slate-500 block mb-1">Input Nilai</label>
+                    <input type="number" id="input-val" oninput="convert()" placeholder="0" class="w-full bg-transparent text-2xl font-bold text-white focus:outline-none calc-font">
+                </div>
+
+                <div class="flex justify-center text-slate-500">
+                    <i class="fas fa-arrow-down animate-bounce"></i>
+                </div>
+
+                <div class="bg-slate-800 p-4 rounded-xl border border-emerald-500/30 bg-emerald-900/10">
+                    <label class="text-xs text-emerald-500/80 block mb-1">Hasil Konversi</label>
+                    <div id="output-val" class="text-2xl font-bold text-emerald-400 calc-font break-all">0</div>
+                    <div id="output-unit" class="text-sm text-emerald-600 text-right mt-1 font-mono"></div>
+                </div>
+            </div>
+            
+             <div class="mt-auto pt-6 text-center text-[10px] text-slate-600 font-mono">
+                &copy; Copyright Riyan 2025
+            </div>
+        </div>
+
+        <!-- 3. AI CHAT VIEW (Gemini 2.5 Integrated) -->
+        <div id="ai-view" class="hidden h-full flex flex-col relative bg-slate-800 z-0">
+             <!-- Header AI (Tanpa Tombol Setting) -->
+             <div class="h-12 border-b border-slate-700 flex items-center justify-between px-4 bg-slate-900/50">
+                <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded bg-purple-600 flex items-center justify-center">
+                        <i class="fa-solid fa-bolt text-white text-[10px]"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-white tracking-wide text-xs">Gemini 2.5 Flash</h1>
+                        <span class="text-[9px] text-green-400">● Preview Mode</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Container -->
+            <div id="chatContainer" class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
+                <!-- Welcome -->
+                <div id="welcomeMsg" class="flex flex-col items-center justify-center h-full text-center p-6 opacity-60">
+                    <i class="fa-solid fa-microchip text-4xl text-purple-500 mb-4 animate-pulse"></i>
+                    <h2 class="text-lg font-bold text-white">AI Ready</h2>
+                    <p class="text-xs text-slate-400 mt-2">Versi Eksperimental Tercepat</p>
+                </div>
+                
+                <!-- Loading -->
+                <div id="loadingIndicator" class="hidden flex justify-start w-full">
+                    <div class="bg-surface border border-slate-700 px-4 py-3 rounded-2xl rounded-tl-none flex items-center gap-2">
+                        <div class="loader"><span></span><span></span><span></span></div>
+                        <span class="text-xs text-slate-400 ml-2">Mengetik...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="bg-slate-900 p-3 border-t border-slate-700">
+                <div class="relative flex gap-2 items-end">
+                    <textarea id="promptInput" rows="1" 
+                        class="flex-1 bg-slate-800 text-white text-sm rounded-xl px-4 py-3 border border-slate-700 focus:border-purple-500 outline-none resize-none max-h-24 placeholder-slate-500"
+                        placeholder="Ketik pesan..." oninput="autoResize(this)"></textarea>
+                    
+                    <button onclick="sendMessage()" id="sendBtn" class="w-11 h-11 rounded-xl bg-purple-600 hover:bg-purple-500 text-white flex-shrink-0 flex items-center justify-center shadow-lg transition-transform active:scale-95">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Logic Script Reference -->
+    <script src="logic.js"></script>
 </body>
 </html>
 
