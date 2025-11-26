@@ -72,11 +72,11 @@
                 <i class="fas fa-globe mr-2"></i>Conv
             </button>
             <button onclick="switchTab('ai')" id="tab-ai" class="flex-1 py-4 text-center font-semibold text-slate-400 border-b-2 border-transparent transition-all hover:bg-slate-700/50">
-                <i class="fas fa-bolt mr-2"></i>AI Chat
+                <i class="fas fa-bolt mr-2"></i>AI 2.5
             </button>
         </div>
 
-        <!-- HISTORY PANEL -->
+        <!-- HISTORY PANEL (Untuk Kalkulator) -->
         <div id="history-overlay" class="absolute top-[58px] right-0 w-3/4 h-[calc(100%-58px)] bg-slate-900/95 backdrop-blur-sm z-40 history-panel history-closed border-l border-slate-700 flex flex-col">
             <div class="flex justify-between items-center p-4 border-b border-slate-700">
                 <span class="text-sm font-bold text-emerald-400"><i class="fas fa-history mr-2"></i>Riwayat</span>
@@ -94,7 +94,7 @@
             </div>
         </div>
 
-        <!-- 1. CALCULATOR VIEW -->
+        <!-- 1. CALCULATOR VIEW (TIDAK DIUBAH) -->
         <div id="calculator-view" class="p-4 flex flex-col h-full relative z-0 overflow-y-auto">
             <div class="bg-slate-900 rounded-xl p-4 mb-3 text-right shadow-inner border border-slate-700/50 shrink-0 relative flex flex-col justify-end min-h-[160px]">
                 <button onclick="toggleHistory()" class="absolute top-3 right-3 text-slate-500 hover:text-emerald-400 transition-colors bg-slate-800/80 p-2 rounded-lg backdrop-blur-sm z-20">
@@ -160,7 +160,7 @@
             </div>
         </div>
 
-        <!-- 2. CONVERTER VIEW -->
+        <!-- 2. CONVERTER VIEW (TIDAK DIUBAH) -->
         <div id="converter-view" class="p-6 hidden h-full overflow-y-auto flex flex-col z-0 pb-10">
             <div id="api-status" class="mb-4 text-[10px] text-slate-500 flex items-center justify-end">
                 <span class="mr-2">Sumber Data:</span>
@@ -214,13 +214,14 @@
             </div>
         </div>
 
-        <!-- 3. AI CHAT VIEW (Gemini 2.5 Integrated) -->
+        <!-- 3. AI CHAT VIEW (DIPERBAIKI TAMPILAN RESPONSIVE NYA) -->
+        <!-- Menambahkan flex flex-col dan relative agar input bisa menempel di bawah -->
         <div id="ai-view" class="hidden h-full flex flex-col relative bg-slate-800 z-0">
-             <!-- Header AI (Tanpa Tombol Setting) -->
-             <div class="h-12 border-b border-slate-700 flex items-center justify-between px-4 bg-slate-900/50">
+             <!-- Header AI -->
+             <div class="h-14 shrink-0 border-b border-slate-700 flex items-center justify-between px-4 bg-slate-900/50">
                 <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded bg-purple-600 flex items-center justify-center">
-                        <i class="fa-solid fa-bolt text-white text-[10px]"></i>
+                    <div class="w-7 h-7 rounded-lg bg-purple-600 flex items-center justify-center">
+                        <i class="fa-solid fa-bolt text-white text-xs"></i>
                     </div>
                     <div>
                         <h1 class="font-bold text-white tracking-wide text-xs">Gemini 2.5 Flash</h1>
@@ -230,7 +231,8 @@
             </div>
 
             <!-- Chat Container -->
-            <div id="chatContainer" class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
+            <!-- pb-24 ditambahkan agar pesan terakhir tidak tertutup oleh footer input -->
+            <div id="chatContainer" class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth pb-24">
                 <!-- Welcome -->
                 <div id="welcomeMsg" class="flex flex-col items-center justify-center h-full text-center p-6 opacity-60">
                     <i class="fa-solid fa-microchip text-4xl text-purple-500 mb-4 animate-pulse"></i>
@@ -248,13 +250,14 @@
             </div>
 
             <!-- Input Area -->
-            <div class="bg-slate-900 p-3 border-t border-slate-700">
+            <!-- Absolute bottom-0 memastikan menempel di bawah tanpa menutupi viewport utama -->
+            <div class="absolute bottom-0 w-full bg-slate-900/95 backdrop-blur p-3 border-t border-slate-700 z-20">
                 <div class="relative flex gap-2 items-end">
                     <textarea id="promptInput" rows="1" 
-                        class="flex-1 bg-slate-800 text-white text-sm rounded-xl px-4 py-3 border border-slate-700 focus:border-purple-500 outline-none resize-none max-h-24 placeholder-slate-500"
+                        class="flex-1 bg-slate-800 text-white text-sm rounded-2xl px-4 py-3 border border-slate-700 focus:border-purple-500 focus:ring-1 outline-none resize-none max-h-24 placeholder-slate-500"
                         placeholder="Ketik pesan..." oninput="autoResize(this)"></textarea>
                     
-                    <button onclick="sendMessage()" id="sendBtn" class="w-11 h-11 rounded-xl bg-purple-600 hover:bg-purple-500 text-white flex-shrink-0 flex items-center justify-center shadow-lg transition-transform active:scale-95">
+                    <button onclick="sendMessage()" id="sendBtn" class="w-11 h-11 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex-shrink-0 flex items-center justify-center shadow-lg transition-transform active:scale-95">
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
                 </div>
