@@ -1,7 +1,6 @@
 // --- 1. CONFIG & UTILS ---
 
 // PENTING: Menggunakan variabel sistem 'apiKey' untuk keamanan.
-// Variabel ini diisi otomatis oleh environment, jangan di-hardcode.
 const apiKey = "AIzaSyDqQBdvNbTwypaHWLjETx_DBdCHf_djdYQ"; 
 const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
 
@@ -63,7 +62,6 @@ function switchTab(tab) {
     } else if (tab === 'ai') {
         aiView.classList.remove('hidden');
         tabAi.className = activeAiClass;
-        // Scroll ke bawah saat tab AI dibuka
         setTimeout(() => chatContainer.scrollTop = chatContainer.scrollHeight, 100);
     }
 }
@@ -280,7 +278,6 @@ async function sendMessage() {
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
     try {
-        // Fetch to Gemini API using system provided apiKey
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey}`;
         
         const response = await fetch(url, {
@@ -317,7 +314,7 @@ function appendMessage(text, type) {
     const div = document.createElement('div');
     const isUser = type === 'user';
     
-    div.className = `flex w-full ${isUser ? 'justify-end' : 'justify-start'} animate-fade-in mb-4`;
+    div.className = `flex w-full ${isUser ? 'justify-end' : 'justify-start'} animate-fade-in mb-3`;
     
     let bubbleClass = isUser 
         ? 'bg-purple-600 text-white rounded-2xl rounded-tr-sm' 
@@ -327,9 +324,12 @@ function appendMessage(text, type) {
 
     const contentHTML = isUser ? text : (typeof marked !== 'undefined' ? marked.parse(text) : text);
 
-    // Perbaikan: Box dipendekkan (max-w-[75%]) dan diberi jarak kiri kanan (mx-3)
+    // FIX: 
+    // 1. max-w-[70%]: Lebar maksimum hanya 70% (tidak terlalu lebar).
+    // 2. text-xs: Ukuran font lebih kecil di HP (agar kotak tidak terlalu panjang/tinggi).
+    // 3. px-3 py-2: Padding lebih rapat.
     div.innerHTML = `
-        <div class="max-w-[75%] mx-3 px-4 py-3 ${bubbleClass} text-sm prose prose-invert break-words overflow-hidden shadow-md">
+        <div class="max-w-[70%] mx-2 px-3 py-2 ${bubbleClass} text-xs sm:text-sm prose prose-invert break-words overflow-hidden shadow-sm">
             ${contentHTML}
         </div>
     `;
