@@ -327,9 +327,9 @@ function appendMessage(text, type) {
 
     const contentHTML = isUser ? text : (typeof marked !== 'undefined' ? marked.parse(text) : text);
 
-    // Perbaikan Responsivitas: max-w-[85%] dan break-words agar tidak melebar di HP
+    // Perbaikan: Box dipendekkan (max-w-[75%]) dan diberi jarak kiri kanan (mx-3)
     div.innerHTML = `
-        <div class="max-w-[85%] px-4 py-3 ${bubbleClass} text-sm prose prose-invert break-words overflow-hidden">
+        <div class="max-w-[75%] mx-3 px-4 py-3 ${bubbleClass} text-sm prose prose-invert break-words overflow-hidden shadow-md">
             ${contentHTML}
         </div>
     `;
@@ -340,4 +340,3 @@ function appendMessage(text, type) {
 // Init App
 updateUnits();
 fetchLiveRates();
-
