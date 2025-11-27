@@ -2,7 +2,7 @@
 
 // PENTING: Menggunakan variabel sistem 'apiKey' untuk keamanan.
 // Variabel ini diisi otomatis oleh environment, jangan di-hardcode.
-const apiKey = "AIzaSyChkUo1qt4epG77LXbLFy0mDp3SS85PMOk"; 
+const apiKey = "AIzaSyDqQBdvNbTwypaHWLjETx_DBdCHf_djdYQ"; 
 const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
 
 const dSin = (d) => Math.sin(d * (Math.PI / 180));
